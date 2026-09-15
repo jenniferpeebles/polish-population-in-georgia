@@ -1,0 +1,2 @@
+country,capital,capital_longitude,capital_latitude,source,retrieved
+Poland,Warsaw,21.02,52.26,https://api.worldbank.org/v2/country/PL?format=json,2026-09-14

@@ -1,0 +1,8 @@
+name,label,concept,geography,machine_name,table,human_label,universe
+B01001_001,Estimate!!Total:,Sex by Age,NA,total_population,B01001,Total population,Total population
+B04006_061,Estimate!!Total:!!Polish,People Reporting Ancestry,NA,polish_ancestry,B04006,People reporting Polish ancestry,Total population
+B05006_040,Estimate!!Total:!!Europe:!!Eastern Europe:!!Poland,Place of Birth for the Foreign-Born Population in the United States,NA,poland_born,B05006,Foreign-born residents born in Poland,Foreign-born population excluding born at sea
+B16001_001,Estimate!!Total:,Language Spoken at Home by Ability to Speak English for the Population 5 Years and Over,NA,population_age_5_plus,B16001,Population age 5 and older,Population 5 years and over
+B16001_030,Estimate!!Total:!!Polish:,Language Spoken at Home by Ability to Speak English for the Population 5 Years and Over,NA,polish_at_home,B16001,People who speak Polish at home,Population 5 years and over
+B16001_031,"Estimate!!Total:!!Polish:!!Speak English ""very well""",Language Spoken at Home by Ability to Speak English for the Population 5 Years and Over,NA,polish_english_very_well,B16001,Polish at home; speaks English very well,Polish speakers age 5+
+B16001_032,"Estimate!!Total:!!Polish:!!Speak English less than ""very well""",Language Spoken at Home by Ability to Speak English for the Population 5 Years and Over,NA,polish_english_less_than_very_well,B16001,Polish at home; speaks English less than very well,Polish speakers age 5+

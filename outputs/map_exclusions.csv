@@ -1,0 +1,13 @@
+geography,measure,received,retained,excluded,population_floor,empty_geometry
+counties,polish_ancestry,159,46,113,0,0
+counties,poland_born,159,3,156,0,0
+counties,polish_at_home,159,0,159,0,0
+places,polish_ancestry,675,35,640,1000,0
+places,poland_born,675,0,675,1000,0
+places,polish_at_home,675,0,675,1000,0
+tracts,polish_ancestry,2796,5,2791,500,5
+tracts,poland_born,2796,0,2796,500,5
+tracts,polish_at_home,2796,0,2796,500,5
+pumas,polish_ancestry,77,67,10,0,0
+pumas,poland_born,77,0,77,0,0
+pumas,polish_at_home,77,0,77,0,0

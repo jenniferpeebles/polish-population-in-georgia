@@ -1,0 +1,6 @@
+dataset,epsg,invalid,empty
+states,4326,0,0
+counties,4326,0,0
+places,4326,0,0
+tracts,4326,0,5
+pumas,4326,0,0

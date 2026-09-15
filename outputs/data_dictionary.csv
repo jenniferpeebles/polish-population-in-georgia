@@ -1,0 +1,8 @@
+machine_name,variable,table,human_label,universe
+total_population,B01001_001,B01001,Total population,Total population
+population_age_5_plus,B16001_001,B16001,Population age 5 and older,Population 5 years and over
+polish_ancestry,B04006_061,B04006,People reporting Polish ancestry,Total population
+poland_born,B05006_040,B05006,Foreign-born residents born in Poland,Foreign-born population excluding born at sea
+polish_at_home,B16001_030,B16001,People who speak Polish at home,Population 5 years and over
+polish_english_very_well,B16001_031,B16001,Polish at home; speaks English very well,Polish speakers age 5+
+polish_english_less_than_very_well,B16001_032,B16001,Polish at home; speaks English less than very well,Polish speakers age 5+
