@@ -1,45 +1,193 @@
+# Shared helper functions used by the numbered scripts.
+
 log_message <- function(...) {
- x <- paste0(format(Sys.time(),"%Y-%m-%d %H:%M:%S")," | ",paste0(...,collapse="")); message(x)
- cat(x,"\n",file=file.path(project_root,"logs","pipeline.log"),append=TRUE)
+  message_text <- paste0(
+    format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+    " | ",
+    paste0(..., collapse = "")
+  )
+
+  message(message_text)
+
+  readr::write_lines(
+    message_text,
+    file.path(project_root, "logs", "pipeline.log"),
+    append = TRUE
+  )
 }
-safe_divide <- function(n,d,m=1) if_else(is.na(n)|is.na(d)|d<=0,NA_real_,n/d*m)
-ratio_moe_90 <- function(n,d,nm,dm,m=1) {
- r <- n/d; a <- nm^2-r^2*dm^2; z <- sqrt(ifelse(a>=0,a,nm^2+r^2*dm^2))/d*m
- z[is.na(n)|is.na(d)|d<=0] <- NA_real_; z
+
+safe_divide <- function(numerator, denominator, multiplier = 1) {
+  dplyr::if_else(
+    is.na(numerator) | is.na(denominator) | denominator <= 0,
+    NA_real_,
+    numerator / denominator * multiplier
+  )
 }
-add_reliability_fields <- function(x,m) {
- e <- x[[m]]; z <- x[[paste0(m,"_moe")]]
- x[[paste0(m,"_ci90_lower")]] <- ifelse(is.na(e)|is.na(z),NA_real_,pmax(0,e-z))
- x[[paste0(m,"_ci90_upper")]] <- ifelse(is.na(e)|is.na(z),NA_real_,e+z)
- x[[paste0(m,"_cv")]] <- ifelse(is.na(e)|e<=0|is.na(z),NA_real_,(z/1.645)/e*100)
- x[[paste0(m,"_moe_gt_estimate")]] <- ifelse(is.na(e)|is.na(z),NA,z>e)
- x[[paste0(m,"_high_cv")]] <- ifelse(is.na(x[[paste0(m,"_cv")]]),NA,x[[paste0(m,"_cv")]]>=cv_review_threshold)
- x
+
+ratio_moe_90 <- function(
+  numerator,
+  denominator,
+  numerator_moe,
+  denominator_moe,
+  multiplier = 1
+) {
+  ratio <- numerator / denominator
+
+  subtraction_formula <- numerator_moe^2 - ratio^2 * denominator_moe^2
+  addition_formula <- numerator_moe^2 + ratio^2 * denominator_moe^2
+
+  selected_formula <- dplyr::if_else(
+    subtraction_formula >= 0,
+    subtraction_formula,
+    addition_formula
+  )
+
+  margin_of_error <- sqrt(selected_formula) / denominator * multiplier
+
+  dplyr::if_else(
+    is.na(numerator) | is.na(denominator) | denominator <= 0,
+    NA_real_,
+    margin_of_error
+  )
 }
-shape_acs <- function(raw) {
- a <- st_drop_geometry(raw)
- if(anyDuplicated(a[c("GEOID","variable")])) stop("Duplicate geography-variable keys.")
- w <- a %>% select(GEOID,NAME,variable,estimate,moe) %>% pivot_wider(names_from=variable,values_from=c(estimate,moe))
- for(v in names(acs_variables)) {
-  names(w)[names(w)==paste0("estimate_",v)] <- v
-  names(w)[names(w)==paste0("moe_",v)] <- paste0(v,"_moe")
- }
- for(m in primary_measures) {
-  d <- unname(measure_denominators[m])
-  w[[paste0(m,"_pct")]] <- safe_divide(w[[m]],w[[d]],100)
-  w[[paste0(m,"_pct_moe")]] <- ratio_moe_90(w[[m]],w[[d]],w[[paste0(m,"_moe")]],w[[paste0(d,"_moe")]],100)
-  w <- add_reliability_fields(w,m)
- }
- w$polish_english_less_than_very_well_pct <- safe_divide(w$polish_english_less_than_very_well,w$polish_at_home,100)
- w
+
+add_reliability_fields <- function(data, measure) {
+  estimate <- data[[measure]]
+  margin_of_error <- data[[paste0(measure, "_moe")]]
+
+  data %>%
+    mutate(
+      "{measure}_ci90_lower" := if_else(
+        is.na(estimate) | is.na(margin_of_error),
+        NA_real_,
+        pmax(0, estimate - margin_of_error)
+      ),
+      "{measure}_ci90_upper" := if_else(
+        is.na(estimate) | is.na(margin_of_error),
+        NA_real_,
+        estimate + margin_of_error
+      ),
+      "{measure}_cv" := if_else(
+        is.na(estimate) | estimate <= 0 | is.na(margin_of_error),
+        NA_real_,
+        (margin_of_error / 1.645) / estimate * 100
+      ),
+      "{measure}_moe_gt_estimate" := if_else(
+        is.na(estimate) | is.na(margin_of_error),
+        NA,
+        margin_of_error > estimate
+      ),
+      "{measure}_high_cv" := if_else(
+        is.na(.data[[paste0(measure, "_cv")]]),
+        NA,
+        .data[[paste0(measure, "_cv")]] >= cv_review_threshold
+      )
+    )
 }
-reliable_estimate <- function(x,m) !is.na(x[[m]]) & x[[paste0(m,"_high_cv")]]%in%FALSE & x[[paste0(m,"_moe_gt_estimate")]]%in%FALSE
-read_clean <- function(path) read_csv(path,show_col_types=FALSE,col_types=cols(GEOID=col_character()))
-join_geometry <- function(a,raw) {
- g <- raw %>% filter(variable==names(acs_variables)[1]) %>% select(GEOID,geometry) %>% distinct(GEOID,.keep_all=TRUE)
- a %>% left_join(g,by="GEOID") %>% st_as_sf() %>% st_transform(4326)
+
+shape_acs <- function(raw_data) {
+  duplicate_keys <- raw_data %>%
+    st_drop_geometry() %>%
+    count(GEOID, variable) %>%
+    filter(n > 1)
+
+  if (nrow(duplicate_keys) > 0) {
+    stop("The downloaded data contain duplicate geography-variable pairs.")
+  }
+
+  wide_data <- raw_data %>%
+    st_drop_geometry() %>%
+    select(GEOID, NAME, variable, estimate, moe) %>%
+    pivot_wider(
+      names_from = variable,
+      values_from = c(estimate, moe),
+      names_glue = "{.value}_{variable}"
+    ) %>%
+    rename_with(~ str_remove(.x, "^estimate_"), starts_with("estimate_")) %>%
+    rename_with(
+      ~ str_replace(.x, "^moe_(.*)$", "\\1_moe"),
+      starts_with("moe_")
+    )
+
+  data_with_percentages <- purrr::reduce(
+    primary_measures,
+    function(data, measure) {
+      denominator <- unname(measure_denominators[measure])
+
+      data %>%
+        mutate(
+          "{measure}_pct" := safe_divide(
+            .data[[measure]],
+            .data[[denominator]],
+            100
+          ),
+          "{measure}_pct_moe" := ratio_moe_90(
+            .data[[measure]],
+            .data[[denominator]],
+            .data[[paste0(measure, "_moe")]],
+            .data[[paste0(denominator, "_moe")]],
+            100
+          )
+        ) %>%
+        add_reliability_fields(measure)
+    },
+    .init = wide_data
+  )
+
+  data_with_percentages %>%
+    mutate(
+      polish_english_less_than_very_well_pct = safe_divide(
+        polish_english_less_than_very_well,
+        polish_at_home,
+        100
+      )
+    )
 }
-assert_unique_geoid <- function(x,label) {if(anyDuplicated(x$GEOID)) stop(label," has duplicate GEOIDs."); invisible(TRUE)}
-write_csv_clean <- function(x,name) x %>% st_drop_geometry() %>% write_csv(file.path(project_root,"data_clean",name),na="")
-save_interactive <- function(x,name) htmlwidgets::saveWidget(x,file.path(project_root,"exports",name),
- selfcontained=requireNamespace("rmarkdown",quietly=TRUE)&&rmarkdown::pandoc_available())
+
+reliable_estimate <- function(data, measure) {
+  !is.na(data[[measure]]) &
+    data[[paste0(measure, "_high_cv")]] %in% FALSE &
+    data[[paste0(measure, "_moe_gt_estimate")]] %in% FALSE
+}
+
+read_clean <- function(path) {
+  readr::read_csv(
+    path,
+    show_col_types = FALSE,
+    col_types = cols(GEOID = col_character())
+  )
+}
+
+join_geometry <- function(data, raw_spatial_data) {
+  geography_shapes <- raw_spatial_data %>%
+    filter(variable == names(acs_variables)[1]) %>%
+    select(GEOID, geometry) %>%
+    distinct(GEOID, .keep_all = TRUE)
+
+  data %>%
+    left_join(geography_shapes, by = "GEOID") %>%
+    st_as_sf() %>%
+    st_transform(4326)
+}
+
+assert_unique_geoid <- function(data, label) {
+  duplicate_count <- data %>%
+    count(GEOID) %>%
+    filter(n > 1) %>%
+    nrow()
+
+  if (duplicate_count > 0) {
+    stop(label, " contains duplicate GEOIDs.")
+  }
+
+  invisible(TRUE)
+}
+
+write_csv_clean <- function(data, filename) {
+  data %>%
+    st_drop_geometry() %>%
+    write_csv(
+      file.path(project_root, "data_clean", filename),
+      na = ""
+    )
+}

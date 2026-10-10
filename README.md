@@ -28,7 +28,7 @@ Of the estimated Polish speakers, **797** are estimated to speak English less th
 
 The language table also reports Polish speakers who speak English "very well" (B16001_031) and less than "very well" (B16001_032). Those are components of the published Polish-at-home total.
 
-The Census Bureau restricts detailed [B16001](https://censusreporter.org/tables/B16001/) language results to certain larger geographies to protect data privacy. Polish-specific estimates are available for Georgia as a whole, but **not for Georgia counties, places or census tracts**. None of Georgia's 159 county values are available, so there is no partial county sum or county-level lower bound to report. Table [C16001](https://censusreporter.org/tables/C16001/) is available for smaller geographies, but it combines Polish with other languages and cannot provide a Polish-specific count. [Census B16001 geographic note](https://data.census.gov/table/ACSDT5Y2024.B16001?d=ACS+5-Year+Estimates+Detailed+Tables&g=040XX00US13&t=Language+Spoken+at+Home)
+The Census Bureau restricts detailed [B16001](https://censusreporter.org/tables/B16001/) language results to certain larger geographies to protect data privacy. Polish-specific estimates are available for Georgia as a whole, but **not for Georgia counties, places or census tracts**. None of Georgia's 159 county values are available -- not an unusual outcome for a metric where we're talking about very very small percentages -- so there is no partial county sum or county-level lower bound to report. Table [C16001](https://censusreporter.org/tables/C16001/) is available for smaller geographies, but it combines Polish with other languages and cannot provide a Polish-specific count. [Census B16001 geographic note](https://data.census.gov/table/ACSDT5Y2024.B16001?d=ACS+5-Year+Estimates+Detailed+Tables&g=040XX00US13&t=Language+Spoken+at+Home)
 
 ## Run it yourself
 
@@ -59,7 +59,7 @@ The Census Bureau restricts detailed [B16001](https://censusreporter.org/tables/
 - The Poland-born measure excludes U.S.-born descendants and is not a citizenship count.
 - Speaking Polish at home describes home-language use among people age 5 and older. It does not count everyone who knows Polish.
 - Missing values remain missing. A zero estimate does not prove absence.
-- Static maps use Web Mercator (EPSG:3857); GeoJSON uses WGS84 (EPSG:4326). Gray areas do not mean zero.
+- Static maps use Web Mercator (EPSG:3857); GeoJSON uses WGS84 (EPSG:4326). Gray areas show areas where the numbers have been withheld, often due to privacy concerns, by the Census Bureau -- gray areas do not mean zero.
 - Rankings are descriptive and do not establish statistically significant differences.
 
 Read [the methodology](docs/methodology.md) and [validation notes](docs/validation.md) before reporting.
@@ -72,7 +72,7 @@ This project uses the [tidyverse](https://tidyverse.tidyverse.org/) created by [
 
 Built for Jennifer Peebles' public-data posts and adapted from her Uzbekistan and Iranian population-in-Georgia projects. Running the pipeline does not publish files or post to social media.
 
-> A note from JP: I built this project with help from ChatGPT/Codex, which wrote much of the project code and generated the initial README from the code, outputs and my instructions and my earlier population projects. I have edited some of this text in my own voice, but I want to be transparent about the help I received.
+> A note from JP: I built this project with help from ChatGPT/Codex, which wrote much of the project code and generated the initial README from the code, outputs and my instructions and my earlier population projects. I have edited some of this text in my own voice, but I want to be transparent about the help I received. I would have used a lot more "y'all"'s.
 
 [Jennifer Peebles](https://www.ajc.com/staff/jennifer-peebles/) / [Atlanta Journal-Constitution](https://www.ajc.com/)
 
