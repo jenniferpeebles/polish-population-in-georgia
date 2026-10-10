@@ -1,24 +1,88 @@
-# Retrieve Poland context and a real flag. These do not supply Census estimates.
-source("scripts/00_config.R"); source("R/helpers.R")
+# Retrieve Poland context and a real flag.
+# These sources do not supply any Census population estimate.
+
+source("scripts/00_config.R")
+source("R/helpers.R")
+
 country_url <- "https://api.worldbank.org/v2/country/PL?format=json"
 country_path <- "data_raw/poland_world_bank.json"
-tryCatch({
- if(!file.exists(country_path)||refresh_downloads) {
-  response <- jsonlite::fromJSON(country_url)
-  stopifnot(response[[2]]$iso2Code=="PL",response[[2]]$name=="Poland")
-  jsonlite::write_json(response,country_path,pretty=TRUE,auto_unbox=TRUE)
-  writeLines(as.character(Sys.Date()),paste0(country_path,".retrieved.txt"))
- }
- profile <- jsonlite::fromJSON(country_path)[[2]]
- facts <- tibble(country=profile$name,capital=profile$capitalCity,
-  capital_longitude=as.numeric(profile$longitude),capital_latitude=as.numeric(profile$latitude),
-  source=country_url,retrieved=readLines(paste0(country_path,".retrieved.txt")))
- write_csv(facts,"outputs/country_facts.csv")
-},error=function(e) warning("Optional country profile unavailable: ",conditionMessage(e)))
+
+tryCatch(
+  {
+    if (!file.exists(country_path) || refresh_downloads) {
+      country_response <- jsonlite::fromJSON(country_url)
+
+      country_is_correct <- country_response[[2]]$iso2Code == "PL" &&
+        country_response[[2]]$name == "Poland"
+
+      if (!country_is_correct) {
+        stop("The World Bank response was not for Poland.")
+      }
+
+      country_response %>%
+        jsonlite::write_json(
+          country_path,
+          pretty = TRUE,
+          auto_unbox = TRUE
+        )
+
+      Sys.Date() %>%
+        as.character() %>%
+        readr::write_lines(
+          paste0(country_path, ".retrieved.txt")
+        )
+    }
+
+    country_profile <- country_path %>%
+      jsonlite::fromJSON() %>%
+      pluck(2)
+
+    country_facts <- tibble(
+      country = country_profile$name,
+      capital = country_profile$capitalCity,
+      capital_longitude = as.numeric(country_profile$longitude),
+      capital_latitude = as.numeric(country_profile$latitude),
+      source = country_url,
+      retrieved = readr::read_lines(
+        paste0(country_path, ".retrieved.txt")
+      )
+    )
+
+    country_facts %>%
+      write_csv("outputs/country_facts.csv")
+  },
+  error = function(error) {
+    warning(
+      "Optional country profile unavailable: ",
+      conditionMessage(error)
+    )
+  }
+)
+
 flag_url <- "https://flagcdn.com/w320/pl.png"
-tryCatch({
- if(!file.exists("assets/poland_flag.png")||refresh_downloads) {
-  download.file(flag_url,"assets/poland_flag.png",mode="wb",quiet=TRUE)
-  writeLines(c(paste("Source:",flag_url),paste("Retrieved:",Sys.Date())),"assets/flag_source.txt")
- }
-},error=function(e) warning("Optional flag download failed: ",conditionMessage(e)))
+flag_path <- "assets/poland_flag.png"
+
+tryCatch(
+  {
+    if (!file.exists(flag_path) || refresh_downloads) {
+      download.file(
+        flag_url,
+        flag_path,
+        mode = "wb",
+        quiet = TRUE
+      )
+
+      c(
+        paste("Source:", flag_url),
+        paste("Retrieved:", Sys.Date())
+      ) %>%
+        readr::write_lines("assets/flag_source.txt")
+    }
+  },
+  error = function(error) {
+    warning(
+      "Optional flag download failed: ",
+      conditionMessage(error)
+    )
+  }
+)
