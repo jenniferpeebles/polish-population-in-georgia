@@ -72,7 +72,7 @@ This project uses the [tidyverse](https://tidyverse.tidyverse.org/) created by [
 
 Built for Jennifer Peebles' public-data posts and adapted from her Uzbekistan and Iranian population-in-Georgia projects. Running the pipeline does not publish files or post to social media.
 
-> A note from JP: I built this project with help from ChatGPT/Codex, which wrote much of the project code and generated the initial README from the code, outputs and my instructions and my earlier population projects. I expect to edit parts in my own voice, but I want to be transparent about the help I received.
+> A note from JP: I built this project with help from ChatGPT/Codex, which wrote much of the project code and generated the initial README from the code, outputs and my instructions and my earlier population projects. I have edited some of this text in my own voice, but I want to be transparent about the help I received.
 
 [Jennifer Peebles](https://www.ajc.com/staff/jennifer-peebles/) / [Atlanta Journal-Constitution](https://www.ajc.com/)
 
